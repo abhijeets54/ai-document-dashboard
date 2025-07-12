@@ -13,7 +13,6 @@ import { Pagination } from '@/components/pagination';
 
 import { useDocuments, useUserPreferences, useInfiniteScroll } from '@/hooks';
 import { Document, FilterOptions, SearchState, CreateDocumentRequest } from '@/types';
-import { motion } from 'framer-motion';
 import { useToast } from '@/components/ui';
 
 export default function Home() {
@@ -30,14 +29,12 @@ export default function Home() {
     hasMore,
     loadMoreDocuments,
     isLoading,
-    error,
     searchState,
     pagination,
     createDocument,
     deleteDocument,
     updateSearch,
     updatePagination,
-    clearError,
     totalDocuments
   } = useDocuments();
 

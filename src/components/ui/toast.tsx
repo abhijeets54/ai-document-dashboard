@@ -62,7 +62,7 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
     setToasts(prev => [...prev, newToast]);
 
     // Auto remove toast after duration
-    if (newToast.duration > 0) {
+    if (newToast.duration && newToast.duration > 0) {
       setTimeout(() => {
         removeToast(id);
       }, newToast.duration);
@@ -186,7 +186,7 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast, onRemove }) => {
         icon={<X className="h-4 w-4" />}
         label="Close notification"
         onClick={() => onRemove(toast.id)}
-        variant="ghost"
+        variant="close"
         className="flex-shrink-0 opacity-60 hover:opacity-100 h-6 w-6"
         showTooltip={false}
         showRipple={false}

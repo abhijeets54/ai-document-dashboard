@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { Modal, Button } from './';
 import { AlertTriangle, Trash2, Info, AlertCircle } from 'lucide-react';
-import { cn } from '@/utils';
 
 export type ConfirmationType = 'danger' | 'warning' | 'info';
 

@@ -47,8 +47,8 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
       URL.revokeObjectURL(url);
 
       success('Document downloaded successfully!', `"${document.title}" has been saved to your device.`);
-    } catch (error) {
-      console.error('Error downloading document:', error);
+    } catch (err) {
+      console.error('Error downloading document:', err);
       error('Failed to download document', 'Please try again or copy the content manually.');
     }
   };
@@ -62,8 +62,8 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
           url: window.location.href,
         });
         success('Document shared successfully!');
-      } catch (error) {
-        console.log('Error sharing:', error);
+      } catch (err) {
+        console.log('Error sharing:', err);
         error('Failed to share document', 'Please try again or copy the content manually.');
       }
     } else {
@@ -73,8 +73,8 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
           `${document.title}\n\n${document.content}\n\nShared from Slideoo Dashboard`
         );
         success('Document copied to clipboard!', 'You can now paste it anywhere you like.');
-      } catch (error) {
-        console.log('Error copying to clipboard:', error);
+      } catch (err) {
+        console.log('Error copying to clipboard:', err);
         error('Failed to copy to clipboard', 'Please try selecting and copying the text manually.');
       }
     }
