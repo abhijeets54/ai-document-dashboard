@@ -4,7 +4,7 @@ A modern, responsive dashboard for managing AI-generated documents built with Ne
 
 ## 🚀 Live Demo
 
-[View Live Demo](https://slideoo-dashboard.vercel.app) *(Will be available after deployment)*
+[View Live Demo](https://ai-document-dashboard-two.vercel.app/) 
 
 ## ✨ Features
 
