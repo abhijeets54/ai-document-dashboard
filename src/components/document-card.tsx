@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Card, CardHeader, CardContent, CardFooter, Badge, Button } from '@/components/ui';
+import { Card, CardHeader, CardContent, CardFooter, Badge, Button, useCommonConfirmations } from '@/components/ui';
 import { Document } from '@/types';
 import { formatRelativeTime, truncateText, getDocumentTypeIcon, getDocumentTypeColor } from '@/utils';
 import { MoreVertical, Eye, Trash2, Edit } from 'lucide-react';
@@ -23,9 +23,17 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
   className,
 }) => {
   const [showActions, setShowActions] = React.useState(false);
+  const [isClicked, setIsClicked] = React.useState(false);
+  const { confirmDelete } = useCommonConfirmations();
 
   const handleView = () => {
+    setIsClicked(true);
+    // Open modal immediately without delay
     onView(document);
+    // Reset the clicked state after animation completes
+    setTimeout(() => {
+      setIsClicked(false);
+    }, 300);
   };
 
   const handleEdit = () => {
@@ -34,8 +42,9 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
     }
   };
 
-  const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this document?')) {
+  const handleDelete = async () => {
+    const confirmed = await confirmDelete(document.title);
+    if (confirmed) {
       onDelete(document.id);
     }
   };
@@ -56,7 +65,9 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
       className={className}
     >
       <Card
-        className="group relative h-full cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02] focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2"
+        className={`group relative h-full cursor-pointer transition-all duration-150 hover:shadow-md hover:scale-[1.02] focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2 ${
+          isClicked ? 'scale-[0.98] opacity-90' : ''
+        }`}
         tabIndex={0}
         role="button"
         aria-label={`View document: ${document.title}`}

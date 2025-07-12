@@ -1,10 +1,11 @@
 'use client';
 
 import React from 'react';
-import { Modal, Badge, Button } from '@/components/ui';
+import { Modal, Badge, Button, ActionButton, useToast } from '@/components/ui';
 import { Document } from '@/types';
 import { formatDate, getDocumentTypeIcon, getDocumentTypeColor } from '@/utils';
 import { Calendar, Tag, Edit, Download, Share } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface DocumentPreviewProps {
   document: Document | null;
@@ -19,6 +20,7 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
   onClose,
   onEdit,
 }) => {
+  const { success, error } = useToast();
   if (!document) return null;
 
   const handleEdit = () => {
@@ -28,20 +30,27 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
   };
 
   const handleDownload = () => {
-    // Create a blob with the document content
-    const blob = new Blob([document.content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
+    try {
+      // Create a blob with the document content
+      const blob = new Blob([document.content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
 
-    // Create a temporary link and trigger download
-    const link = window.document.createElement('a');
-    link.href = url;
-    link.download = `${document.title}.txt`;
-    window.document.body.appendChild(link);
-    link.click();
-    window.document.body.removeChild(link);
+      // Create a temporary link and trigger download
+      const link = window.document.createElement('a');
+      link.href = url;
+      link.download = `${document.title}.txt`;
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
 
-    // Clean up the URL
-    URL.revokeObjectURL(url);
+      // Clean up the URL
+      URL.revokeObjectURL(url);
+
+      success('Document downloaded successfully!', `"${document.title}" has been saved to your device.`);
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      error('Failed to download document', 'Please try again or copy the content manually.');
+    }
   };
 
   const handleShare = async () => {
@@ -52,8 +61,10 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
           text: document.content.substring(0, 200) + '...',
           url: window.location.href,
         });
+        success('Document shared successfully!');
       } catch (error) {
         console.log('Error sharing:', error);
+        error('Failed to share document', 'Please try again or copy the content manually.');
       }
     } else {
       // Fallback: copy to clipboard
@@ -61,10 +72,33 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
         await navigator.clipboard.writeText(
           `${document.title}\n\n${document.content}\n\nShared from Slideoo Dashboard`
         );
-        alert('Document content copied to clipboard!');
+        success('Document copied to clipboard!', 'You can now paste it anywhere you like.');
       } catch (error) {
         console.log('Error copying to clipboard:', error);
+        error('Failed to copy to clipboard', 'Please try selecting and copying the text manually.');
       }
+    }
+  };
+
+  // Animation variants for staggered animations
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+        delayChildren: 0.05,
+        when: "beforeChildren"
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 5 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.2 }
     }
   };
 
@@ -75,9 +109,14 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
       title={document.title}
       size="xl"
     >
-      <div className="space-y-6">
+      <motion.div 
+        className="space-y-6"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         {/* Document Header */}
-        <div className="flex items-start justify-between">
+        <motion.div variants={itemVariants} className="flex items-start justify-between">
           <div className="flex items-center space-x-3">
             <span className="text-2xl" role="img" aria-label={`${document.type} icon`}>
               {getDocumentTypeIcon(document.type)}
@@ -105,38 +144,40 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
             </div>
           </div>
           
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleShare}
-              aria-label="Share document"
-            >
-              <Share className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDownload}
-              aria-label="Download document"
-            >
-              <Download className="h-4 w-4" />
-            </Button>
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
+              <ActionButton
+                icon={<Share className="h-4 w-4" />}
+                label="Share document"
+                onClick={handleShare}
+                variant="action"
+              />
+              <ActionButton
+                icon={<Download className="h-4 w-4" />}
+                label="Download document"
+                onClick={handleDownload}
+                variant="action"
+              />
+            </div>
             {onEdit && (
               <Button
-                variant="outline"
+                variant="primary"
                 size="sm"
                 onClick={handleEdit}
+                className="ml-2 shadow-md hover:shadow-lg transition-shadow duration-200"
               >
                 <Edit className="h-4 w-4 mr-2" />
                 Edit
               </Button>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Document Metadata */}
-        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700 pb-4">
+        <motion.div 
+          variants={itemVariants}
+          className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700 pb-4"
+        >
           <div className="flex items-center space-x-1">
             <Calendar className="h-4 w-4" />
             <span>Created {formatDate(document.createdAt)}</span>
@@ -158,19 +199,25 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
               </div>
             </div>
           )}
-        </div>
+        </motion.div>
 
         {/* Document Content */}
-        <div className="prose prose-sm max-w-none dark:prose-invert">
+        <motion.div 
+          variants={itemVariants}
+          className="prose prose-sm max-w-none dark:prose-invert"
+        >
           <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 max-h-96 overflow-y-auto">
             <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-gray-900 dark:text-gray-100">
               {document.content}
             </pre>
           </div>
-        </div>
+        </motion.div>
 
         {/* Document Stats */}
-        <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <motion.div 
+          variants={itemVariants}
+          className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700"
+        >
           <div className="text-center">
             <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               {document.content.split(' ').length}
@@ -189,8 +236,8 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">Est. Reading Time (min)</div>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </Modal>
   );
 };

@@ -47,8 +47,15 @@ const Header: React.FC<HeaderProps> = ({
             </Button>
 
             <div className="flex items-center space-x-1 sm:space-x-2 min-w-0">
-              <div className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-blue-600 text-white font-bold text-xs sm:text-sm">
-                S
+              <div className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-purple-600 text-white">
+                <svg
+                  className="h-3 w-3 sm:h-4 sm:w-4 ml-0.5"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
               </div>
               <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 truncate">
                 Slideoo

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button, Select } from '@/components/ui';
+import { Button, Select, ActionButton } from '@/components/ui';
 import { Search, X, SortAsc, SortDesc } from 'lucide-react';
 import { SearchState } from '@/types';
 import { cn } from '@/utils';
@@ -69,15 +69,17 @@ const SearchBar: React.FC<SearchBarProps> = ({
           className="w-full rounded-md border border-gray-300 bg-white pl-10 pr-10 py-2 text-sm placeholder:text-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
         />
         {localQuery && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleClearSearch}
-            className="absolute right-1 top-1/2 -translate-y-1/2 p-1 h-6 w-6"
-            aria-label="Clear search"
-          >
-            <X className="h-3 w-3" />
-          </Button>
+          <div className="absolute right-1 top-1/2 -translate-y-1/2">
+            <ActionButton
+              icon={<X className="h-3 w-3" />}
+              label="Clear search"
+              onClick={handleClearSearch}
+              variant="close"
+              className="h-6 w-6 shadow-sm"
+              tooltipPosition="left"
+              showTooltip={false}
+            />
+          </div>
         )}
       </div>
 

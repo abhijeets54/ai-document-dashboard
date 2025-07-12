@@ -2,13 +2,24 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { DocumentCard } from '../document-card';
 import { Document } from '@/types';
+import { ConfirmationProvider } from '@/components/ui';
 
 // Mock framer-motion
 jest.mock('framer-motion', () => ({
   motion: {
     div: ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) => <div {...props}>{children}</div>,
   },
+  AnimatePresence: ({ children }: React.PropsWithChildren<Record<string, unknown>>) => <>{children}</>,
 }));
+
+// Test wrapper component that provides necessary context
+const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return (
+    <ConfirmationProvider>
+      {children}
+    </ConfirmationProvider>
+  );
+};
 
 const mockDocument: Document = {
   id: '1',
@@ -32,11 +43,13 @@ describe('DocumentCard Component', () => {
 
   it('renders document information correctly', () => {
     render(
-      <DocumentCard
-        document={mockDocument}
-        onView={mockOnView}
-        onDelete={mockOnDelete}
-      />
+      <TestWrapper>
+        <DocumentCard
+          document={mockDocument}
+          onView={mockOnView}
+          onDelete={mockOnDelete}
+        />
+      </TestWrapper>
     );
 
     expect(screen.getByText('Test Document')).toBeInTheDocument();
@@ -49,11 +62,13 @@ describe('DocumentCard Component', () => {
 
   it('calls onView when card is clicked', () => {
     render(
-      <DocumentCard
-        document={mockDocument}
-        onView={mockOnView}
-        onDelete={mockOnDelete}
-      />
+      <TestWrapper>
+        <DocumentCard
+          document={mockDocument}
+          onView={mockOnView}
+          onDelete={mockOnDelete}
+        />
+      </TestWrapper>
     );
 
     fireEvent.click(screen.getByRole('button', { name: /view document: test document/i }));
@@ -62,15 +77,17 @@ describe('DocumentCard Component', () => {
 
   it('handles keyboard navigation', () => {
     render(
-      <DocumentCard
-        document={mockDocument}
-        onView={mockOnView}
-        onDelete={mockOnDelete}
-      />
+      <TestWrapper>
+        <DocumentCard
+          document={mockDocument}
+          onView={mockOnView}
+          onDelete={mockOnDelete}
+        />
+      </TestWrapper>
     );
 
     const card = screen.getByRole('button', { name: /view document: test document/i });
-    
+
     fireEvent.keyDown(card, { key: 'Enter' });
     expect(mockOnView).toHaveBeenCalledWith(mockDocument);
 
@@ -80,12 +97,14 @@ describe('DocumentCard Component', () => {
 
   it('shows actions menu when more button is clicked', async () => {
     render(
-      <DocumentCard
-        document={mockDocument}
-        onView={mockOnView}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-      />
+      <TestWrapper>
+        <DocumentCard
+          document={mockDocument}
+          onView={mockOnView}
+          onEdit={mockOnEdit}
+          onDelete={mockOnDelete}
+        />
+      </TestWrapper>
     );
 
     // Find and click the more actions button
@@ -101,12 +120,14 @@ describe('DocumentCard Component', () => {
 
   it('calls onEdit when edit is clicked', async () => {
     render(
-      <DocumentCard
-        document={mockDocument}
-        onView={mockOnView}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
-      />
+      <TestWrapper>
+        <DocumentCard
+          document={mockDocument}
+          onView={mockOnView}
+          onEdit={mockOnEdit}
+          onDelete={mockOnDelete}
+        />
+      </TestWrapper>
     );
 
     const moreButton = screen.getByLabelText('Document actions');
@@ -120,15 +141,14 @@ describe('DocumentCard Component', () => {
   });
 
   it('shows confirmation dialog before deleting', async () => {
-    // Mock window.confirm
-    const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(true);
-
     render(
-      <DocumentCard
-        document={mockDocument}
-        onView={mockOnView}
-        onDelete={mockOnDelete}
-      />
+      <TestWrapper>
+        <DocumentCard
+          document={mockDocument}
+          onView={mockOnView}
+          onDelete={mockOnDelete}
+        />
+      </TestWrapper>
     );
 
     const moreButton = screen.getByLabelText('Document actions');
@@ -137,22 +157,32 @@ describe('DocumentCard Component', () => {
     await waitFor(() => {
       const deleteButton = screen.getByText('Delete');
       fireEvent.click(deleteButton);
-      expect(confirmSpy).toHaveBeenCalled();
-      expect(mockOnDelete).toHaveBeenCalledWith('1');
     });
 
-    confirmSpy.mockRestore();
+    // Check that confirmation dialog appears
+    await waitFor(() => {
+      expect(screen.getByText('Delete Item')).toBeInTheDocument();
+      expect(screen.getByText(/are you sure you want to delete/i)).toBeInTheDocument();
+    });
+
+    // Click confirm button in the dialog
+    const confirmButton = screen.getByRole('button', { name: /delete/i });
+    fireEvent.click(confirmButton);
+
+    await waitFor(() => {
+      expect(mockOnDelete).toHaveBeenCalledWith('1');
+    });
   });
 
   it('does not delete when confirmation is cancelled', async () => {
-    const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(false);
-
     render(
-      <DocumentCard
-        document={mockDocument}
-        onView={mockOnView}
-        onDelete={mockOnDelete}
-      />
+      <TestWrapper>
+        <DocumentCard
+          document={mockDocument}
+          onView={mockOnView}
+          onDelete={mockOnDelete}
+        />
+      </TestWrapper>
     );
 
     const moreButton = screen.getByLabelText('Document actions');
@@ -161,11 +191,20 @@ describe('DocumentCard Component', () => {
     await waitFor(() => {
       const deleteButton = screen.getByText('Delete');
       fireEvent.click(deleteButton);
-      expect(confirmSpy).toHaveBeenCalled();
-      expect(mockOnDelete).not.toHaveBeenCalled();
     });
 
-    confirmSpy.mockRestore();
+    // Check that confirmation dialog appears
+    await waitFor(() => {
+      expect(screen.getByText('Delete Item')).toBeInTheDocument();
+    });
+
+    // Click cancel button in the dialog
+    const cancelButton = screen.getByRole('button', { name: /cancel/i });
+    fireEvent.click(cancelButton);
+
+    await waitFor(() => {
+      expect(mockOnDelete).not.toHaveBeenCalled();
+    });
   });
 
   it('truncates long content', () => {
@@ -175,11 +214,13 @@ describe('DocumentCard Component', () => {
     };
 
     render(
-      <DocumentCard
-        document={longContentDocument}
-        onView={mockOnView}
-        onDelete={mockOnDelete}
-      />
+      <TestWrapper>
+        <DocumentCard
+          document={longContentDocument}
+          onView={mockOnView}
+          onDelete={mockOnDelete}
+        />
+      </TestWrapper>
     );
 
     const content = screen.getByText(/this is a very long document content/i);
@@ -188,11 +229,13 @@ describe('DocumentCard Component', () => {
 
   it('displays relative time correctly', () => {
     render(
-      <DocumentCard
-        document={mockDocument}
-        onView={mockOnView}
-        onDelete={mockOnDelete}
-      />
+      <TestWrapper>
+        <DocumentCard
+          document={mockDocument}
+          onView={mockOnView}
+          onDelete={mockOnDelete}
+        />
+      </TestWrapper>
     );
 
     // Should show relative time (e.g., "2 days ago")

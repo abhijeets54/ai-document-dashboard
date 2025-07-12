@@ -14,12 +14,15 @@ import { Pagination } from '@/components/pagination';
 import { useDocuments, useUserPreferences, useInfiniteScroll } from '@/hooks';
 import { Document, FilterOptions, SearchState, CreateDocumentRequest } from '@/types';
 import { motion } from 'framer-motion';
+import { useToast } from '@/components/ui';
 
 export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+  const { success, error: showErrorToast } = useToast();
 
   const {
     documents,
@@ -65,7 +68,9 @@ export default function Home() {
   };
 
   const handleDeleteDocument = (id: string) => {
+    const document = documents.find(doc => doc.id === id);
     deleteDocument(id);
+    success('Document deleted', document ? `"${document.title}" has been deleted successfully.` : 'Document has been deleted successfully.');
   };
 
   const handleSearchChange = (query: string) => {
@@ -83,7 +88,13 @@ export default function Home() {
 
 
   const handleCreateSubmit = async (request: CreateDocumentRequest) => {
-    await createDocument(request);
+    try {
+      const newDocument = await createDocument(request);
+      success('Document created successfully!', `"${newDocument.title}" has been generated and added to your collection.`);
+      setIsCreateModalOpen(false);
+    } catch (error) {
+      showErrorToast('Failed to create document', error instanceof Error ? error.message : 'Please try again.');
+    }
   };
 
   const toggleSidebar = () => {
@@ -118,24 +129,7 @@ export default function Home() {
         {/* Main Content */}
         <main className="flex-1 lg:ml-0 min-w-0">
           <div className="mx-auto max-w-7xl px-2 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
-            {/* Error Display */}
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
-              >
-                <div className="flex items-center justify-between">
-                  <p className="text-red-800 dark:text-red-200">{error}</p>
-                  <button
-                    onClick={clearError}
-                    className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200"
-                  >
-                    ×
-                  </button>
-                </div>
-              </motion.div>
-            )}
+
 
             {/* Controls Bar */}
             <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
@@ -146,22 +140,24 @@ export default function Home() {
                 />
               </div>
 
-              <div className="flex items-center justify-between sm:justify-end space-x-2 sm:space-x-4">
-                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 order-3 sm:order-1">
+              <div className="flex flex-wrap items-center gap-y-2 justify-between sm:justify-end sm:ml-4">
+                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mr-4 sm:mr-6">
                   {totalDocuments} documents
                 </div>
 
-                <PaginationModeToggle
-                  paginationMode={preferences.paginationMode}
-                  onPaginationModeChange={setPaginationMode}
-                  className="order-1 sm:order-2"
-                />
+                <div className="flex items-center space-x-3 sm:space-x-4">
+                  <PaginationModeToggle
+                    paginationMode={preferences.paginationMode}
+                    onPaginationModeChange={setPaginationMode}
+                    className="shrink-0"
+                  />
 
-                <ViewModeToggle
-                  viewMode={preferences.viewMode}
-                  onViewModeChange={setViewMode}
-                  className="order-2 sm:order-3"
-                />
+                  <ViewModeToggle
+                    viewMode={preferences.viewMode}
+                    onViewModeChange={setViewMode}
+                    className="shrink-0"
+                  />
+                </div>
               </div>
             </div>
 

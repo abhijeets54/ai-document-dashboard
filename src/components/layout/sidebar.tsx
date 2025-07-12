@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Select, Button } from '@/components/ui';
+import { Select, Button, ActionButton } from '@/components/ui';
 import { FilterOptions } from '@/types';
 import { cn } from '@/utils';
 import { Filter, X, FileText, Presentation, Table } from 'lucide-react';
@@ -53,7 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Mobile overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden transition-all duration-300"
+          className="fixed inset-0 z-40 bg-black/10 backdrop-blur-md lg:hidden transition-all duration-300"
           onClick={onClose}
         />
       )}
@@ -72,14 +72,14 @@ const Sidebar: React.FC<SidebarProps> = ({
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               Filters
             </h2>
-            <Button
-              variant="ghost"
-              size="sm"
+            <ActionButton
+              icon={<X className="h-4 w-4" />}
+              label="Close sidebar"
               onClick={onClose}
-              aria-label="Close sidebar"
-            >
-              <X className="h-5 w-5" />
-            </Button>
+              variant="close"
+              className="shadow-sm"
+              tooltipPosition="left"
+            />
           </div>
 
           {/* Content */}

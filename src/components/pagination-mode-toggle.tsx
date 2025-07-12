@@ -17,26 +17,26 @@ const PaginationModeToggle: React.FC<PaginationModeToggleProps> = ({
   className,
 }) => {
   return (
-    <div className={cn('flex items-center space-x-1', className)}>
+    <div className={cn('flex items-center border border-gray-300 dark:border-gray-600 rounded-md', className)}>
       <Button
-        variant={paginationMode === 'infinite' ? 'primary' : 'outline'}
+        variant={paginationMode === 'infinite' ? 'primary' : 'ghost'}
         size="sm"
         onClick={() => onPaginationModeChange('infinite')}
-        className="px-2 py-1"
+        className="rounded-r-none border-r border-gray-300 dark:border-gray-600 p-1 sm:p-2"
         aria-label="Infinite scroll mode"
         title="Infinite scroll mode"
       >
-        <Infinity className="h-4 w-4" />
+        <Infinity className="h-3 w-3 sm:h-4 sm:w-4" />
       </Button>
       <Button
-        variant={paginationMode === 'traditional' ? 'primary' : 'outline'}
+        variant={paginationMode === 'traditional' ? 'primary' : 'ghost'}
         size="sm"
         onClick={() => onPaginationModeChange('traditional')}
-        className="px-2 py-1"
+        className="rounded-l-none p-1 sm:p-2"
         aria-label="Traditional pagination mode"
         title="Traditional pagination mode"
       >
-        <Hash className="h-4 w-4" />
+        <Hash className="h-3 w-3 sm:h-4 sm:w-4" />
       </Button>
     </div>
   );

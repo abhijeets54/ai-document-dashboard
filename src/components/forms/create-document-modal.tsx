@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Modal, Button, Input, Select, Textarea } from '@/components/ui';
+import { Modal, Button, Input, Select, Textarea, useToast } from '@/components/ui';
 import { CreateDocumentRequest } from '@/types';
 import { Sparkles } from 'lucide-react';
 
@@ -25,6 +25,7 @@ const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({
     category: 'business',
   });
   const [errors, setErrors] = useState<Partial<CreateDocumentRequest>>({});
+  const { warning } = useToast();
 
   const typeOptions = [
     { value: 'document', label: 'Document' },
@@ -52,6 +53,12 @@ const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({
     }
 
     setErrors(newErrors);
+
+    // Show toast for validation errors
+    if (Object.keys(newErrors).length > 0) {
+      warning('Please fix the form errors', 'Check the highlighted fields and try again.');
+    }
+
     return Object.keys(newErrors).length === 0;
   };
 
